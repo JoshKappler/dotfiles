@@ -45,7 +45,8 @@ OpenGrid(layout) {
     }
     if win {
         WinRestore("ahk_id " win)
-        WinMove(l, t, r - l, b - t, "ahk_id " win)   ; fill the vertical monitor
+        WinMove(l + 20, t + 20, , , "ahk_id " win)   ; nudge onto the vertical monitor
+        WinMaximize("ahk_id " win)                    ; fill its work area exactly (DPI/taskbar-safe)
     }
 }
 
