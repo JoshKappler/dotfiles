@@ -1,0 +1,32 @@
+-- ~/.config/wezterm/wezterm.lua  (managed by chezmoi — edit via `chezmoi edit`)
+local wezterm = require 'wezterm'
+local config = wezterm.config_builder()
+
+config.font = wezterm.font_with_fallback { 'JetBrainsMono Nerd Font', 'JetBrains Mono', 'Cascadia Code', 'Consolas' }
+config.font_size = {{ if eq .chezmoi.os "darwin" }}14.0{{ else }}11.0{{ end }}
+config.color_scheme = 'Catppuccin Mocha'
+config.hide_tab_bar_if_only_one_tab = true
+config.window_decorations = 'RESIZE'
+config.window_close_confirmation = 'NeverPrompt'
+config.adjust_window_size_when_changing_font_size = false
+config.scrollback_lines = 10000
+{{ if eq .chezmoi.os "windows" }}
+config.default_prog = { 'pwsh.exe', '-NoLogo' }
+{{ end }}
+
+-- Leader = CTRL+a, deliberately distinct from Zellij's Ctrl-p/Ctrl-t modes so the two
+-- never collide. WezTerm manages only WINDOWS/TABS here; Zellij owns panes inside a window.
+config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
+config.keys = {
+  { key = 'n', mods = 'LEADER', action = wezterm.action.SpawnWindow },
+  { key = 't', mods = 'LEADER', action = wezterm.action.SpawnTab 'CurrentPaneDomain' },
+  { key = 'w', mods = 'LEADER', action = wezterm.action.CloseCurrentTab { confirm = false } },
+  { key = 'f', mods = 'LEADER', action = wezterm.action.ToggleFullScreen },
+}
+
+-- Lightweight cheat cue: while LEADER is held, show the available window/tab keys.
+wezterm.on('update-right-status', function(window, _)
+  window:set_right_status(window:leader_is_active() and ' LEADER ▸ n:new-win  t:tab  w:close  f:fullscreen ' or '')
+end)
+
+return config

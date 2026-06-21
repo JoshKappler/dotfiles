@@ -1,0 +1,5 @@
+{{ if eq .chezmoi.os "windows" }}
+.config/helix
+{{ else }}
+AppData
+{{ end }}

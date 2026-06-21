@@ -1,0 +1,12 @@
+# Helix languages — single shared source. LSPs used automatically if installed.
+[[language]]
+name = "typescript"
+auto-format = true
+
+[[language]]
+name = "python"
+auto-format = true
+
+[[language]]
+name = "rust"
+auto-format = true
