@@ -1,0 +1,18 @@
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# secrets / local-only (never commit)
+*.key
+*.pem
+**/secrets.*
+.env
+.env.*
+
+# chezmoi local state
+.chezmoistate*
+
+# logs (repo-sync writes timestamped logs)
+*.log
+logs/
