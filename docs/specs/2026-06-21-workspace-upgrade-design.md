@@ -23,6 +23,8 @@ Five things the user asked for:
 - **Cross-platform**: one config set that renders correctly on both Windows 11 and macOS.
 - **Claude-Code-centric**: the editor's real job is *reading / reviewing / spot-editing* agent-written code, not heavy authoring.
 - **OneDrive caveat**: the user's `projects` folder lives under OneDrive. OneDrive corrupts git internals and does not reliably sync symlinks/junctions. **The config repo must live outside OneDrive.**
+- **Single "main git"**: GitHub **`JoshKappler/dotfiles`** is the canonical remote. Both Windows and macOS sync *to and from it* — it is the source of truth, not OneDrive and not either machine.
+- **One-instruction reproduction**: on a fresh machine the user tells **Claude** to "pull `JoshKappler/dotfiles` and set me up," and gets the identical environment. A **`BOOTSTRAP.md`** is written for Claude (and humans) to follow step-by-step, backed by the `bootstrap-*` scripts.
 
 ### Non-goals (YAGNI)
 - No full-time tiling window manager *required* (it's an optional, documented upgrade).
@@ -138,9 +140,11 @@ Three layers:
 2. **Helix popup** — built-in next-key menu inside the editor.
 3. **Generated `docs/CHEATSHEET.md`** — `scripts/gen-cheatsheet` collects the actual keybindings/prompts from the config files into one master reference, plus a **`cheat` command / espanso trigger** that surfaces it instantly in any terminal.
 
-### 4g. Cross-platform parity
+### 4g. Cross-platform parity & one-instruction reproduction
 - chezmoi templates handle the differences; `scripts/bootstrap-windows.ps1` and `scripts/bootstrap-macos.sh` install the toolchain (winget / brew) and run `chezmoi init --apply JoshKappler`.
 - Windows is built and verified first (current machine). Mac parity is templated as we go and validated when the user is on the MacBook.
+- **`BOOTSTRAP.md` (Claude-followable)**: a top-level doc that walks a fresh Claude session through reproducing the setup — detect OS, install prerequisites, `chezmoi init --apply JoshKappler`, run the repo-sync, register the scheduler, verify. The user's only action on the Mac is to point Claude at the repo and say "set me up." This is the deliverable that makes "duplicate it on my Mac" a single instruction.
+- **Sync model:** GitHub `JoshKappler/dotfiles` is canonical. `chezmoi update` (= `git pull` + re-apply) on either machine pulls the latest; edits are committed + pushed back. An optional scheduled `chezmoi update` keeps both machines current without manual steps.
 
 ---
 
@@ -148,8 +152,8 @@ Three layers:
 
 | Phase | Deliverable |
 |---|---|
-| **0. Repo sync** | `gh` installed; `repo-sync` script clones missing + safely pulls all; scheduled. |
-| **1. Foundations** | dotfiles repo + chezmoi initialized; WezTerm, Zellij, Helix installed (winget). |
+| **0. Repo sync + publish** | `gh` installed + authed; **`JoshKappler/dotfiles` created on GitHub and pushed (the "main git")**; `repo-sync` script clones missing + safely pulls all project repos; scheduled. |
+| **1. Foundations** | chezmoi initialized against the GitHub remote; WezTerm, Zellij, Helix installed (winget). |
 | **2. Terminal + multiplexer** | WezTerm + Zellij configs with hint bar; host/grid model working. |
 | **3. Editor** | Helix config + verification. |
 | **4. Launcher** | `claude-grid` Zellij layout + AHK hotkey on Windows. |
