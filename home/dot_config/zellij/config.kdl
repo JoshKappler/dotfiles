@@ -1,9 +1,26 @@
 // ~/.config/zellij/config.kdl  (managed by chezmoi)
-theme "catppuccin-mocha"
+theme "homebrew"
 pane_frames true
 default_layout "default"   // the default layout keeps the bottom keybinding HINT BAR visible
 show_startup_tips false
 copy_on_select true
+
+// Green-on-black phosphor theme to match WezTerm's Homebrew scheme.
+themes {
+    homebrew {
+        fg "#33FF33"
+        bg "#000000"
+        black "#000000"
+        red "#00CC00"
+        green "#33FF33"
+        yellow "#AAFF00"
+        blue "#00CC66"
+        magenta "#33FFAA"
+        cyan "#00FFCC"
+        white "#CCFFCC"
+        orange "#88FF00"
+    }
+}
 
 // Claude Code is a full-screen TUI. Ctrl+g toggles LOCKED mode, which passes every
 // key straight through to Claude so Zellij never eats its shortcuts. The hint bar

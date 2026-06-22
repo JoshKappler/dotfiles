@@ -1,0 +1,9 @@
+// 2 columns x 4 rows grid of Claude Code sessions. Launch: zellij --layout claude-grid-8
+layout {
+    tab name="claude" {
+        pane split_direction="vertical" {
+            pane split_direction="horizontal" { pane command="claude"; pane command="claude"; pane command="claude"; pane command="claude"; }
+            pane split_direction="horizontal" { pane command="claude"; pane command="claude"; pane command="claude"; pane command="claude"; }
+        }
+    }
+}

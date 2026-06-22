@@ -52,3 +52,4 @@ OpenGrid(layout) {
 
 ^!4:: OpenGrid("claude-grid")
 ^!6:: OpenGrid("claude-grid-6")
+^!8:: OpenGrid("claude-grid-8")
