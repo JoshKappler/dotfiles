@@ -590,20 +590,22 @@ function main() {
   ensureStateRoot();
   loadEntries();
 
-  if (!process.stdin.isTTY) {
-    // Not a TTY (e.g. piped). Render one static frame and exit so it never hangs.
-    process.stdout.write('Claude Control Center Home requires an interactive terminal (TTY).\n');
-    process.stdout.write('Start dir: ' + state.cwd + '\n');
-    process.stdout.write('Entries: ' + state.entries.length + '  Count: ' + state.count + '\n');
-    process.exit(0);
-    return;
-  }
-
   out(ALT_ON + CURSOR_HIDE + CLEAR);
-  readline.emitKeypressEvents(process.stdin);
-  process.stdin.setRawMode(true);
-  process.stdin.resume();
-  process.stdin.setEncoding('utf8');
+
+  // Try to enter interactive raw mode. On Windows a Zellij pane's stdin can
+  // report isTTY=false yet still accept raw keypresses, so attempt setRawMode
+  // and only degrade if it actually throws. We NEVER exit here: exiting would
+  // let the Home pane's command die and collapse the whole window.
+  let rawOk = false;
+  try {
+    readline.emitKeypressEvents(process.stdin);
+    if (typeof process.stdin.setRawMode === 'function') {
+      process.stdin.setRawMode(true);
+      rawOk = true;
+    }
+  } catch { rawOk = false; }
+  try { process.stdin.resume(); } catch { /* */ }
+  try { process.stdin.setEncoding('utf8'); } catch { /* */ }
   process.stdin.on('keypress', (s, k) => {
     try { onKey(s, k); } catch (e) { setStatus('key error: ' + asciiSafe(e && e.message), 'error'); try { redraw(); } catch { /* */ } }
   });
@@ -612,7 +614,10 @@ function main() {
   process.on('SIGTERM', () => cleanupAndExit(0));
   process.stdout.on('resize', () => { try { redraw(); } catch { /* */ } });
 
+  if (!rawOk) setStatus('limited input (no raw TTY detected) - keys may not register', 'error');
   redraw();
+  // The interval also keeps the event loop alive so the pane/window never closes,
+  // even if no raw input is available.
   timer = setInterval(() => { try { redraw(); } catch { /* */ } }, 1000);
 }
 
