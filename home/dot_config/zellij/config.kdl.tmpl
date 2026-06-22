@@ -41,6 +41,11 @@ keybinds {
         // Ctrl+Alt+w: DELIBERATE manual close of the focused agent. Closing is the
         // only way an agent dies — casual tab/pane navigation never can (see below).
         bind "Ctrl Alt w" { CloseFocus; }
+        // Switch between agent windows (tabs). Repurpose Alt+[ / Alt+] — zellij's
+        // default swap-layout keys, which we don't use — into prev/next tab, so
+        // the brackets you used to see now actually move between windows.
+        bind "Alt [" { GoToPreviousTab; }
+        bind "Alt ]" { GoToNextTab; }
         // No-kill guard: disable global Quit so one keystroke can't nuke every agent.
         unbind "Ctrl q"
     }

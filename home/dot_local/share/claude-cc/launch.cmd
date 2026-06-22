@@ -3,7 +3,7 @@ setlocal
 REM Claude Control Center session launcher (runs inside the WezTerm window).
 REM Prepend the tool dirs so zellij/node/claude resolve even if the inherited
 REM PATH is thin (this propagates to the panes zellij spawns: node Home, claude).
-set "PATH=%LOCALAPPDATA%\Zellij;%ProgramFiles%\nodejs;%USERPROFILE%\.local\bin;%PATH%"
+set "PATH=%LOCALAPPDATA%\Zellij;%ProgramFiles%\nodejs;%ProgramFiles%\GitHub CLI;%USERPROFILE%\.local\bin;%PATH%"
 
 REM Attach to the persistent "claude-cc" session, creating it (with the
 REM default_layout "cc-default" = the Home tab) if it doesn't exist yet. This is

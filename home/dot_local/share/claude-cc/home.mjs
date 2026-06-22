@@ -34,6 +34,7 @@ function subagentsRootDir() { return path.join(stateRoot(), 'subagents'); }
 function appDir() { return path.join(HOME, '.local', 'share', 'claude-cc'); }
 function inspectorPath() { return path.join(appDir(), 'inspector.mjs'); }
 function gitPushPath() { return path.join(appDir(), 'git-push-all.mjs'); }
+function cloneAllPath() { return path.join(appDir(), 'clone-all.mjs'); }
 function layoutPath(n) {
   // Forward slashes work in Node on Windows too; keep them for the zellij arg.
   return appDir().replace(/\\/g, '/') + '/layouts/claude-' + n + '.kdl';
@@ -62,6 +63,9 @@ const YELLOW = fg(33);
 const RED = fg(31);
 const CYAN = fg(36);
 const INVERSE = fg(7);
+// Key chip: bold BLACK text on a bright-green block, so the key letter is dark
+// and clearly legible against the green phosphor theme.
+const KEYCAP = ESC + '[1;30;102m';
 
 // ---------- safe text ----------
 function asciiSafe(s) {
@@ -79,6 +83,8 @@ function pad(s, n) {
   if (s.length >= n) return s.slice(0, n);
   return s + ' '.repeat(n - s.length);
 }
+// A key chip: the key glyph in black on a green block, e.g. chip('Enter').
+function chip(s) { return KEYCAP + ' ' + s + ' ' + RESET; }
 
 // ---------- terminal size ----------
 function termCols() { return (process.stdout.columns && process.stdout.columns > 0) ? process.stdout.columns : 80; }
@@ -114,6 +120,8 @@ const state = {
   status: '',         // transient inline message
   statusKind: 'info', // info | error | ok
   lastGit: null,      // { repos: [...] } or { error }
+  lastClone: null,    // { root, repos: [...] } or { error }
+  busy: false,        // true while a blocking spawn (clone/push) is running
 };
 
 function loadEntries() {
@@ -325,6 +333,45 @@ function gitPush() {
   setStatus('git push: ' + pushed + ' pushed, ' + errs + ' error(s), ' + parsed.repos.length + ' repo(s)', errs ? 'error' : 'ok');
 }
 
+function cloneAll() {
+  // Always target the projects root (not the browsed folder): this button means
+  // "clone/update ALL my GitHub repos into projects", wherever the cursor is.
+  const root = defaultRoot();
+  state.busy = true;
+  setStatus('Cloning + updating all repos into ' + asciiSafe(path.basename(root)) + ' (this can take a while)...', 'info');
+  redraw();
+  let res;
+  try {
+    res = spawnSync('node', [cloneAllPath(), root], { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
+  } catch (e) {
+    state.lastClone = { error: asciiSafe(e && e.message) };
+    state.busy = false;
+    setStatus('clone-all failed to spawn', 'error');
+    return;
+  }
+  state.busy = false;
+  if (res.error) {
+    state.lastClone = { error: asciiSafe(res.error.message) };
+    setStatus('clone-all spawn error', 'error');
+    return;
+  }
+  let parsed = null;
+  const outStr = (res.stdout || '').toString().trim();
+  try { parsed = JSON.parse(outStr); } catch { parsed = null; }
+  if (!parsed || !Array.isArray(parsed.repos)) {
+    const why = parsed && parsed.error ? parsed.error : truncate(asciiSafe(outStr || (res.stderr || '').toString()), 80);
+    state.lastClone = { error: 'bad output: ' + why };
+    setStatus('clone-all: unexpected output', 'error');
+    return;
+  }
+  state.lastClone = parsed;
+  const cloned = parsed.repos.filter((r) => r.action === 'cloned').length;
+  const updated = parsed.repos.filter((r) => r.action === 'updated').length;
+  const errs = parsed.repos.filter((r) => r.action === 'error' || (r.error && r.error !== 'empty repo' && r.error !== 'dirty')).length;
+  setStatus('clone/sync: ' + cloned + ' cloned, ' + updated + ' updated, ' + parsed.repos.length + ' repo(s)' +
+    (errs ? ', ' + errs + ' error(s)' : ''), errs ? 'error' : 'ok');
+}
+
 function openInspector() {
   const p = state.subParents[state.subSel];
   if (!p) { setStatus('No subagent group selected', 'error'); return; }
@@ -362,16 +409,13 @@ function render() {
   lines.push(INVERSE + BOLD + pad(' CLAUDE CONTROL CENTER  -  Home', Math.min(W, 78)) + RESET);
   lines.push('');
 
-  // Path + count line
-  lines.push(BOLD + 'Path: ' + RESET + GREEN + truncate(asciiSafe(state.cwd), Math.min(W - 8, 68)) + RESET);
-  lines.push(BOLD + 'Agents to launch: ' + RESET + BRIGHT_GREEN + '[ ' + state.count + ' ]' + RESET +
-    DIM + '   (1-8 or +/-)' + RESET);
+  // Folder line (state only — all key hints live in the one footer below).
+  lines.push(BOLD + 'Folder: ' + RESET + GREEN + truncate(asciiSafe(state.cwd), Math.min(W - 9, 67)) + RESET);
   lines.push(sep);
 
   // Directory navigator
   const dirFocused = state.focus === 'dirs';
-  lines.push((dirFocused ? BRIGHT_GREEN + '> ' : '  ') + BOLD + 'DIRECTORY' + RESET +
-    DIM + '   (up/down select, -> enter, <- parent)' + RESET);
+  lines.push((dirFocused ? BRIGHT_GREEN + '> ' : '  ') + BOLD + 'DIRECTORY' + RESET);
   const totalRows = termRows();
   // budget for the directory list
   const navRows = Math.max(4, Math.min(10, totalRows - 22));
@@ -393,6 +437,16 @@ function render() {
       lines.push('    ' + DIM + '(' + (state.dirSel + 1) + '/' + state.entries.length + ')' + RESET);
     }
   }
+  lines.push(sep);
+
+  // Launch — the clear "fill a window with agents" affordance. Shows exactly
+  // what Enter will do with the current count + selected folder.
+  const launchName = path.basename(state.cwd) || state.cwd;
+  lines.push(BOLD + 'LAUNCH' + RESET);
+  lines.push('  ' + chip('Enter') + ' open a new window of ' + chip(String(state.count)) +
+    ' agent' + (state.count === 1 ? '' : 's') + ' in ' + GREEN + truncate(asciiSafe(launchName), 24) + RESET);
+  lines.push('  ' + DIM + 'set the count with ' + RESET + chip('1') + DIM + '..' + RESET + chip('8') +
+    DIM + ';  add more later inside a tab with ' + RESET + chip('Alt') + '+' + chip('a'));
   lines.push(sep);
 
   // Gauges
@@ -420,8 +474,7 @@ function render() {
 
   // Subagents
   const subFocused = state.focus === 'subagents';
-  lines.push((subFocused ? BRIGHT_GREEN + '> ' : '  ') + BOLD + 'SUBAGENTS' + RESET +
-    DIM + '   (Tab to focus; Enter opens inspector)' + RESET);
+  lines.push((subFocused ? BRIGHT_GREEN + '> ' : '  ') + BOLD + 'SUBAGENTS' + RESET);
   if (state.subParents.length === 0) {
     lines.push('    ' + DIM + '(no agents running subagents)' + RESET);
   } else {
@@ -436,6 +489,32 @@ function render() {
     }
   }
   lines.push(sep);
+
+  // clone/sync results (compact) — shown after a `c` run.
+  if (state.lastClone) {
+    lines.push(BOLD + 'LAST CLONE / SYNC' + RESET);
+    if (state.lastClone.error) {
+      lines.push('  ' + RED + truncate(asciiSafe(state.lastClone.error), Math.min(W - 4, 70)) + RESET);
+    } else {
+      const repos = state.lastClone.repos || [];
+      const cloned = repos.filter((r) => r.action === 'cloned').length;
+      const updated = repos.filter((r) => r.action === 'updated').length;
+      const current = repos.filter((r) => r.action === 'up-to-date').length;
+      const skipped = repos.filter((r) => r.action === 'skipped').length;
+      const errs = repos.filter((r) => r.action === 'error').length;
+      lines.push('  ' + GREEN + cloned + ' cloned' + RESET + '  ' + GREEN + updated + ' updated' + RESET +
+        '  ' + DIM + current + ' current  ' + skipped + ' skipped' + RESET +
+        (errs ? '  ' + RED + errs + ' error' + RESET : ''));
+      // surface the most interesting rows (anything not plain up-to-date)
+      const notable = repos.filter((r) => r.action !== 'up-to-date').slice(0, 3);
+      for (const r of notable) {
+        const col = r.action === 'error' ? RED : (r.action === 'cloned' || r.action === 'updated' ? GREEN : DIM);
+        lines.push('  ' + pad(truncate(asciiSafe(r.name), 20), 22) + col + pad(r.action, 11) + RESET +
+          (r.error ? DIM + truncate(asciiSafe(r.error), 28) + RESET : ''));
+      }
+    }
+    lines.push(sep);
+  }
 
   // git push results (compact)
   if (state.lastGit) {
@@ -469,17 +548,22 @@ function render() {
     lines.push('');
   }
 
-  // Cheatsheet footer (always visible)
+  // Cheatsheet footer — the SINGLE place all keys are documented. Key glyphs are
+  // black-on-green chips so they read clearly against the phosphor theme.
   lines.push(sep);
-  lines.push(DIM + ' KEYS  ' + RESET +
-    BOLD + 'up/down' + RESET + ' select  ' +
-    BOLD + '<-/->' + RESET + ' dir  ' +
-    BOLD + 'Tab' + RESET + ' focus  ' +
-    BOLD + '1-8 +/-' + RESET + ' count');
-  lines.push(DIM + '       ' + RESET +
-    BOLD + 'Enter' + RESET + ' launch/inspect  ' +
-    BOLD + 'g' + RESET + ' git push  ' +
-    BOLD + 'q' + RESET + ' quit');
+  lines.push(
+    DIM + 'MOVE  ' + RESET + chip('Up') + chip('Dn') + ' select   ' +
+    chip('->') + ' open folder   ' + chip('<-') + ' up a level   ' +
+    chip('Tab') + ' subagents');
+  lines.push(
+    DIM + 'DO    ' + RESET + chip('1') + DIM + '-' + RESET + chip('8') + ' set agents   ' +
+    chip('Enter') + ' launch window   ' +
+    chip('c') + ' clone all repos   ' + chip('g') + ' push all   ' + chip('q') + ' quit');
+  lines.push(
+    DIM + 'WINDOW' + RESET + ' ' + chip('Alt') + '+' + chip('[') + chip(']') + ' switch   ' +
+    chip('Alt') + '+' + chip('a') + ' add agent   ' +
+    chip('Ctrl') + '+' + chip('g') + ' lock   ' +
+    chip('Ctrl') + '+' + chip('Alt') + '+' + chip('w') + ' close');
 
   const frame = HOME_POS + ESC + '[2J' + lines.join('\r\n') + '\r\n';
   lastFrame = frame;
@@ -516,6 +600,13 @@ function onKey(str, key) {
   }
   if (str === '-' || str === '_' || name === 'subtract' || str === '[') {
     state.count = Math.max(1, state.count - 1);
+    redraw();
+    return;
+  }
+
+  // clone/sync ALL repos into the projects folder
+  if (!key.ctrl && (name === 'c' || str === 'c')) {
+    cloneAll();
     redraw();
     return;
   }
