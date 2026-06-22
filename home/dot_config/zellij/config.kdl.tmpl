@@ -3,10 +3,11 @@ theme "homebrew"
 // Frameless panes: agents are divided by a single thin line that runs edge to
 // edge, instead of a boxed ASCII frame around each one.
 pane_frames false
-// Mouse off: removes Zellij's "ALT-click to group / ALT-right-click ungroup all"
-// hint (which is confusing and unused here) and lets WezTerm handle text
-// selection/scroll natively. Navigation here is all keyboard anyway.
-mouse_mode false
+// Mouse ON: the pointer must work (click to focus a pane, click the Home tab to
+// jump back, drag a border to resize). Turning it off had stranded the cursor as
+// a text selector. The confusing "ALT-click group" hint is avoided by using the
+// plain tab-bar (not the compact/status bar) for the top row instead.
+mouse_mode true
 default_layout "cc-default"   // the control center's Home tab; `zellij attach -c claude-cc` creates the session with this
 show_startup_tips false
 copy_on_select true

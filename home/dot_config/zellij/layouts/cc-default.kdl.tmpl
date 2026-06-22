@@ -3,10 +3,10 @@
 // name; the launcher creates the session via `zellij attach -c claude-cc`.
 layout {
     default_tab_template {
-        // One clean top bar: tabs + a compact mode indicator. The old two-line
-        // status-bar (Ctrl/Alt keybind tiles + "ALT-click group" mouse hints)
-        // is gone; every key is documented on the Home tab's footer instead.
-        pane size=1 borderless=true { plugin location="zellij:compact-bar"; }
+        // Plain tab-bar = just the tab strip (which window you're on). It does NOT
+        // show the "ALT-click group" mouse hint that the compact/status bar does,
+        // so the mouse can stay on without that clutter.
+        pane size=1 borderless=true { plugin location="zellij:tab-bar"; }
         children
     }
     tab name="Home" focus=true {

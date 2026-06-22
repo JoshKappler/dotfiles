@@ -1,16 +1,20 @@
-// 4 Claude agents, 2x2 grid (2 columns, 2 rows each).
+// 4 Claude agents - 4 narrow vertical columns.
 layout {
     default_tab_template {
-        pane size=1 borderless=true { plugin location="zellij:compact-bar"; }
-        pane size=1 borderless=true command="node" {
-            args "{{ .chezmoi.homeDir | replace "\\" "/" }}/.local/share/claude-cc/agentbar.mjs"
-        }
+        pane size=1 borderless=true { plugin location="zellij:tab-bar"; }
         children
     }
     tab name="agents" {
-        pane split_direction="vertical" {
-            pane split_direction="horizontal" { pane command="claude"; pane command="claude"; }
-            pane split_direction="horizontal" { pane command="claude"; pane command="claude"; }
+        pane split_direction="horizontal" {
+            pane size=1 borderless=true command="node" {
+                args "{{ .chezmoi.homeDir | replace "\\" "/" }}/.local/share/claude-cc/agentbar.mjs"
+            }
+            pane split_direction="vertical" {
+                pane command="claude"
+                pane command="claude"
+                pane command="claude"
+                pane command="claude"
+            }
         }
     }
 }

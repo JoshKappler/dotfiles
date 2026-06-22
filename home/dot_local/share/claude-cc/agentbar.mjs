@@ -23,8 +23,9 @@ function groups() {
   return [
     [lbl('KEYS')],
     [{ plain: 'Alt+[ Alt+]', styled: BOLD + BBLUE + 'Alt+[ Alt+]' + RESET }, txt(' switch window')],
-    [key('Alt+a'), txt(' add instance')],
-    [key('Ctrl+Alt+w'), txt(' close instance')],
+    [key('Alt+a'), txt(' add')],
+    [key('Ctrl+Alt+w'), txt(' close')],
+    [{ plain: 'Ctrl+h', styled: BOLD + BBLUE + 'Ctrl+h' + RESET }, txt(' +arrows move pane')],
     [key('Ctrl+g'), txt(' lock to Claude')],
     [txt('Home = leftmost tab')],
   ];
