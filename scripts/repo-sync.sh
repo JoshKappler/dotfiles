@@ -5,6 +5,7 @@
 set -euo pipefail
 ROOT="${1:-$HOME/projects}"
 USER_LOGIN="${2:-JoshKappler}"
+EXCLUDE="${3:-dotfiles}"   # space-separated; the config repo lives outside projects
 mkdir -p "$ROOT"
 LOG="$ROOT/_repo-sync.log"
 log() { printf '%s  %s\n' "$(date -Iseconds)" "$1" | tee -a "$LOG"; }
@@ -14,6 +15,7 @@ mapfile -t repos < <(gh repo list "$USER_LOGIN" --limit 200 --json name -q '.[].
 log "START sync of ${#repos[@]} repos into $ROOT"
 
 for name in "${repos[@]}"; do
+  case " $EXCLUDE " in *" $name "*) log "SKIP  $name (excluded)"; continue;; esac
   dir="$ROOT/$name"
   if [ ! -d "$dir" ]; then log "CLONE $name"; gh repo clone "$USER_LOGIN/$name" "$dir" >/dev/null 2>&1; continue; fi
   ( cd "$dir"

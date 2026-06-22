@@ -3,9 +3,10 @@
 # Requires: gh (authenticated) + git. Run ad-hoc or via Task Scheduler (register-sync-task.ps1).
 param(
   [string]$Root = (Join-Path $env:USERPROFILE 'OneDrive\desktop\projects'),
-  [string]$User = 'JoshKappler'
+  [string]$User = 'JoshKappler',
+  [string[]]$Exclude = @('dotfiles')   # the config repo lives at ~/.local/share/chezmoi, NOT in projects
 )
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue'    # git/gh write progress to stderr; don't let that abort the loop
 if (-not (Test-Path $Root)) { New-Item -ItemType Directory -Path $Root | Out-Null }
 $log = Join-Path $Root '_repo-sync.log'
 function Log($m) { $l = '{0}  {1}' -f (Get-Date -Format s), $m; Add-Content -Path $log -Value $l; Write-Host $l }
@@ -17,6 +18,7 @@ $repos = gh repo list $User --limit 200 --json name -q '.[].name'
 Log ("START sync of {0} repos into {1}" -f ($repos | Measure-Object).Count, $Root)
 
 foreach ($name in $repos) {
+  if ($Exclude -contains $name) { Log "SKIP  $name (excluded)"; continue }
   $dir = Join-Path $Root $name
   if (-not (Test-Path $dir)) { Log "CLONE $name"; gh repo clone "$User/$name" $dir 2>&1 | Out-Null; continue }
   Push-Location $dir
