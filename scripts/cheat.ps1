@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh
-# cheat.ps1 — print the generated workspace cheat sheet.
+# cheat.ps1 -- print the generated workspace cheat sheet.
 # Uses `bat` for syntax highlighting/paging if available, else plain Get-Content.
 #
 # Add a `cheat` command to your PowerShell profile (notepad $PROFILE):
@@ -9,7 +9,7 @@ $ErrorActionPreference = 'Stop'
 
 $doc = Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..')) 'docs/CHEATSHEET.md'
 if (-not (Test-Path $doc)) {
-    Write-Error "Cheat sheet not found at $doc — run scripts/gen-cheatsheet.ps1 first."
+    Write-Error "Cheat sheet not found at $doc -- run scripts/gen-cheatsheet.ps1 first."
     exit 1
 }
 
