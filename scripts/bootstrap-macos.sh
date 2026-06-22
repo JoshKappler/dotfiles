@@ -75,12 +75,12 @@ bash "$SCRIPT_DIR/repo-sync.sh" "$HOME/projects" JoshKappler
 # --- done --------------------------------------------------------------------
 echo
 info 'Bootstrap complete.'
-warn 'Hammerspoon needs Accessibility permission for the launcher hotkeys:'
+warn 'Hammerspoon needs Accessibility permission for the Ctrl+Alt+C launcher hotkey:'
 echo  '     System Settings > Privacy & Security > Accessibility > enable Hammerspoon.'
 echo  '     Then open Hammerspoon once and Reload Config.'
 info 'Note: zellij on macOS reads ~/.config/zellij natively — no env var needed (that is a Windows-only fixup).'
 echo
 info 'What to try:'
 echo  '  - Open WezTerm. The font should be JetBrains Mono Nerd Font.'
-echo  '  - Press Ctrl+Alt+4 for a 2x2 Claude grid (Ctrl+Alt+6 for 2x3) on the vertical monitor.'
+echo  '  - Press Ctrl+Alt+C to open the Claude Control Center; from its Home tab pick a dir + agent count and launch.'
 echo  '  - In a shell: `chezmoi managed` lists the configs now under management.'

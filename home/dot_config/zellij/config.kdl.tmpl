@@ -1,0 +1,59 @@
+// ~/.config/zellij/config.kdl  (managed by chezmoi — templated; edit via `chezmoi edit`)
+theme "homebrew"
+pane_frames true
+default_layout "default"   // plain `zellij` keeps the default bars; the control center launches with --layout cc-default
+show_startup_tips false
+copy_on_select true
+
+// Green-on-black phosphor theme to match WezTerm's Homebrew scheme.
+themes {
+    homebrew {
+        fg "#33FF33"
+        bg "#000000"
+        black "#000000"
+        red "#00CC00"
+        green "#33FF33"
+        yellow "#AAFF00"
+        blue "#00CC66"
+        magenta "#33FFAA"
+        cyan "#00FFCC"
+        white "#CCFFCC"
+        orange "#88FF00"
+    }
+}
+
+keybinds {
+    // Ctrl+g toggles LOCKED mode, which passes every key straight to Claude so
+    // Zellij never eats its shortcuts. The hint bar shows how to leave locked mode.
+    normal {
+        bind "Ctrl g" { SwitchToMode "locked"; }
+    }
+    locked {
+        bind "Ctrl g" { SwitchToMode "normal"; }
+    }
+
+    // --- Control Center actions (active in every mode except locked) ---
+    shared_except "locked" {
+        // Alt+a: add another Claude agent in this tab (new pane running `claude`).
+        bind "Alt a" { Run "claude"; }
+        // Alt+i: open the subagent inspector for this window as a floating overlay.
+        bind "Alt i" { Run "node" "{{ .chezmoi.homeDir | replace "\\" "/" }}/.local/share/claude-cc/inspector.mjs" { floating true; }; }
+        // Ctrl+Alt+w: DELIBERATE manual close of the focused agent. Closing is the
+        // only way an agent dies — casual tab/pane navigation never can (see below).
+        bind "Ctrl Alt w" { CloseFocus; }
+        // No-kill guard: disable global Quit so one keystroke can't nuke every agent.
+        unbind "Ctrl q"
+    }
+
+    // No-kill guard: strip the casual close-pane / close-tab keys from every mode
+    // that bound them by default, so switching/adding/backtracking can't kill agents.
+    pane {
+        unbind "x"
+    }
+    tab {
+        unbind "x"
+    }
+    tmux {
+        unbind "x"
+    }
+}

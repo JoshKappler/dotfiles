@@ -2,8 +2,8 @@
 
 This repo is the single source of truth for a cross-platform (Windows 11 + macOS)
 power-user workspace centered on the **Claude Code CLI**: WezTerm terminal, Zellij
-multiplexer, Helix editor, espanso text expansion, a Claude-grid launcher hotkey,
-and project-repo auto-sync — all managed by [chezmoi](https://chezmoi.io) from the
+multiplexer, Helix editor, espanso text expansion, a Claude Control Center launcher
+hotkey, and project-repo auto-sync — all managed by [chezmoi](https://chezmoi.io) from the
 private repo `JoshKappler/dotfiles`.
 
 The two bootstrap scripts below do everything end-to-end. Run the one for the OS,
@@ -33,7 +33,8 @@ What it does, in order:
 4. `chezmoi init --apply JoshKappler` (clones this repo + applies all configs).
 5. `scripts/repo-sync.ps1` then `scripts/register-sync-task.ps1` (clone/ff-pull
    project repos + a logon+daily Task Scheduler job).
-6. Drops a `claude-grid.ahk` shortcut into the Startup folder and starts it.
+6. Drops a `claude-cc.ahk` shortcut into the Startup folder and starts it, so the
+   `Ctrl+Alt+C` Control Center hotkey is live every logon.
 
 **Interactive bits:** WezTerm and gh install **per-machine and trigger a UAC
 elevation prompt** — approve them. `gh auth login` opens a browser for GitHub
@@ -75,8 +76,10 @@ After bootstrap, confirm each:
 - [ ] **WezTerm** opens and uses the JetBrains Mono Nerd Font.
 - [ ] **Zellij** shows its keybind hint bar at the bottom (run `zellij`).
 - [ ] **Helix** (`hx`) shows the `Space` command popup when you press Space.
-- [ ] **Ctrl+Alt+4** opens a 2×2 Claude grid on the vertical monitor
-      (Ctrl+Alt+6 → 2×3). Windows = AutoHotkey, macOS = Hammerspoon.
+- [ ] **Ctrl+Alt+C** opens the Claude Control Center (one movable, tabbed window
+      with a **Home** tab); pressing it again focuses the same window. From Home,
+      pick a directory + agent count (1–8) and `Enter` launches them in a new tab.
+      Windows = AutoHotkey, macOS = Hammerspoon.
 - [ ] espanso: typing **`:plan`** expands to its snippet.
 - [ ] In Claude Code, the **`/plan`** slash command works.
 - [ ] **`cheat`** prints the master cheat sheet.

@@ -1,6 +1,11 @@
-// 2 columns x 3 rows grid of Claude Code sessions. Launch: zellij --layout claude-grid-6
+// 6 Claude agents, 2x3 grid (2 columns, 3 rows each).
 layout {
-    tab name="claude" {
+    default_tab_template {
+        pane size=1 borderless=true { plugin location="zellij:tab-bar"; }
+        children
+        pane size=2 borderless=true { plugin location="zellij:status-bar"; }
+    }
+    tab name="agents" {
         pane split_direction="vertical" {
             pane split_direction="horizontal" { pane command="claude"; pane command="claude"; pane command="claude"; }
             pane split_direction="horizontal" { pane command="claude"; pane command="claude"; pane command="claude"; }

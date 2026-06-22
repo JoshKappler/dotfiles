@@ -2,7 +2,7 @@
 #
 # Installs the toolchain (winget), wires the Zellij env var, authenticates gh,
 # applies the chezmoi dotfiles, syncs project repos + registers the sync task,
-# and installs the Claude-grid AutoHotkey launcher into Startup.
+# and installs the Claude Control Center AutoHotkey launcher into Startup.
 #
 # Run from anywhere:
 #   iwr https://raw.githubusercontent.com/JoshKappler/dotfiles/main/scripts/bootstrap-windows.ps1 | iex
@@ -96,30 +96,30 @@ Info 'Syncing project repos (repo-sync.ps1) ...'
 Info 'Registering the repo-sync scheduled task (register-sync-task.ps1) ...'
 & (Join-Path $ScriptDir 'register-sync-task.ps1')
 
-# --- 6. Claude-grid launcher into Startup ------------------------------------
-# Drop a shortcut to claude-grid.ahk in the per-user Startup folder so the
-# Ctrl+Alt+4 / Ctrl+Alt+6 hotkeys are live every logon, and start it now.
-$ahk = Join-Path $ScriptDir 'claude-grid.ahk'
+# --- 6. Claude Control Center launcher into Startup --------------------------
+# Drop a shortcut to claude-cc.ahk in the per-user Startup folder so the
+# Ctrl+Alt+C Control Center hotkey is live every logon, and start it now.
+$ahk = Join-Path $ScriptDir 'claude-cc.ahk'
 if (Test-Path $ahk) {
   $startup  = [Environment]::GetFolderPath('Startup')   # shell:startup
-  $lnkPath  = Join-Path $startup 'claude-grid.lnk'
+  $lnkPath  = Join-Path $startup 'claude-cc.lnk'
   Info "Installing launcher shortcut -> $lnkPath"
   $wsh = New-Object -ComObject WScript.Shell
   $sc  = $wsh.CreateShortcut($lnkPath)
   $sc.TargetPath = $ahk            # .ahk is associated with AutoHotkey's launcher
   $sc.WorkingDirectory = $ScriptDir
-  $sc.Description = 'Claude Code grid launcher (Ctrl+Alt+4 / Ctrl+Alt+6)'
+  $sc.Description = 'Claude Control Center launcher (Ctrl+Alt+C)'
   $sc.Save()
   Info 'Starting the launcher now ...'
   Start-Process $ahk
 } else {
-  Warn "claude-grid.ahk not found at $ahk — skipping launcher install."
+  Warn "claude-cc.ahk not found at $ahk — skipping launcher install."
 }
 
 # --- done --------------------------------------------------------------------
 Write-Host ''
 Info 'Bootstrap complete. What to try:'
 Write-Host '  - Open WezTerm (Start menu). The font should be JetBrainsMono Nerd Font.' -ForegroundColor Green
-Write-Host '  - Press Ctrl+Alt+4 for a 2x2 Claude grid (Ctrl+Alt+6 for 2x3) on the vertical monitor.' -ForegroundColor Green
+Write-Host '  - Press Ctrl+Alt+C to open the Claude Control Center; from its Home tab pick a dir + agent count and launch.' -ForegroundColor Green
 Write-Host '  - In a shell: `chezmoi managed` lists the configs now under management.' -ForegroundColor Green
 Write-Host '  - Restart open shells once so ZELLIJ_CONFIG_DIR is picked up.' -ForegroundColor Green

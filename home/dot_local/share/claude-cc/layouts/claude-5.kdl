@@ -1,0 +1,14 @@
+// 5 Claude agents, 2 columns (left 3 rows, right 2 rows).
+layout {
+    default_tab_template {
+        pane size=1 borderless=true { plugin location="zellij:tab-bar"; }
+        children
+        pane size=2 borderless=true { plugin location="zellij:status-bar"; }
+    }
+    tab name="agents" {
+        pane split_direction="vertical" {
+            pane split_direction="horizontal" { pane command="claude"; pane command="claude"; pane command="claude"; }
+            pane split_direction="horizontal" { pane command="claude"; pane command="claude"; }
+        }
+    }
+}

@@ -1,0 +1,65 @@
+#Requires AutoHotkey v2.0
+#SingleInstance Force
+; claude-cc.ahk — open / focus the Claude Control Center.
+;   Ctrl+Alt+C  -> focus the control-center window if it's open, else launch it.
+; ONE movable, non-maximized WezTerm window hosts the persistent "claude-cc"
+; Zellij session: a permanent Home tab (directory navigator + agent-count picker
+; + mass git-push + 5h/weekly limit gauges + cheatsheet) plus one tab per launched
+; group of 1-8 Claude agents. Agent count + new tabs are chosen from Home now, so a
+; single hotkey replaces the old 4/6/8 grid hotkeys.
+; Requires: wezterm + zellij + node + claude on PATH. Session helper: launch.cmd.
+
+GridClass := "wezterm-claude-cc"
+LaunchCmd := EnvGet("USERPROFILE") "\.local\share\claude-cc\launch.cmd"
+
+FindVerticalMonitor() {
+    Loop MonitorGetCount() {
+        MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
+        if ((b - t) > (r - l))          ; taller than wide = the vertical monitor
+            return A_Index
+    }
+    return MonitorGetPrimary()
+}
+
+OpenCenter() {
+    ; Already open? Just focus it — never spawn a second window.
+    existing := WinExist("ahk_class " GridClass)
+    if existing {
+        WinActivate("ahk_id " existing)
+        return
+    }
+    mon := FindVerticalMonitor()
+    MonitorGetWorkArea(mon, &l, &t, &r, &b)
+    before := WinGetList("ahk_class " GridClass)
+    Run('wezterm start --class ' GridClass ' -- "' LaunchCmd '"')
+    win := 0
+    Loop 60 {                            ; wait up to ~6s for the new window
+        Sleep 100
+        for hwnd in WinGetList("ahk_class " GridClass) {
+            isNew := true
+            for old in before
+                if (old == hwnd) {
+                    isNew := false
+                    break
+                }
+            if isNew {
+                win := hwnd
+                break
+            }
+        }
+        if win
+            break
+    }
+    if win {
+        WinRestore("ahk_id " win)
+        ; Non-maximized + movable: fit comfortably inside the vertical monitor's
+        ; work area with margins, so DPI scaling can't push it off the bottom-right.
+        ww := r - l
+        wh := b - t
+        w  := ww - 80
+        h  := Round(wh * 0.72)
+        WinMove(l + 40, t + 40, w, h, "ahk_id " win)
+    }
+}
+
+^!c:: OpenCenter()
