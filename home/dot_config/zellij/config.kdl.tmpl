@@ -1,6 +1,12 @@
 // ~/.config/zellij/config.kdl  (managed by chezmoi — templated; edit via `chezmoi edit`)
 theme "homebrew"
-pane_frames true
+// Frameless panes: agents are divided by a single thin line that runs edge to
+// edge, instead of a boxed ASCII frame around each one.
+pane_frames false
+// Mouse off: removes Zellij's "ALT-click to group / ALT-right-click ungroup all"
+// hint (which is confusing and unused here) and lets WezTerm handle text
+// selection/scroll natively. Navigation here is all keyboard anyway.
+mouse_mode false
 default_layout "cc-default"   // the control center's Home tab; `zellij attach -c claude-cc` creates the session with this
 show_startup_tips false
 copy_on_select true
