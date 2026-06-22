@@ -10,6 +10,11 @@ GridClass := "wezterm-claude-cc"
 LaunchCmd := EnvGet("USERPROFILE") "\.local\share\claude-cc\launch.cmd"
 ; Resolve wezterm by full path so it works regardless of the inherited PATH.
 WezExe := FileExist(A_ProgramFiles "\WezTerm\wezterm.exe") ? A_ProgramFiles "\WezTerm\wezterm.exe" : "wezterm"
+; Session watchdog: ends the claude-cc Zellij session when this window closes so it
+; (and its CLI/agent panes) never lingers in the background. Spawned OUTSIDE the
+; window so it survives the close (zellij on_force_close does not fire on Windows).
+NodeExe  := FileExist(A_ProgramFiles "\nodejs\node.exe") ? A_ProgramFiles "\nodejs\node.exe" : "node"
+Watchdog := EnvGet("USERPROFILE") "\OneDrive\desktop\projects\claude-control-center\session-watchdog.mjs"
 
 FindVerticalMonitor() {
     Loop MonitorGetCount() {
@@ -61,5 +66,9 @@ if (win && WinExist("ahk_id " win)) {
         h  := Round(wh * 0.72)
         WinMove(l + 40, t + 40, w, h, "ahk_id " win)
     }
+}
+; Start the watchdog (outside the window tree) so the session ends with the window.
+if (win && FileExist(Watchdog)) {
+    try Run('"' NodeExe '" "' Watchdog '" claude-cc', , "Hide")
 }
 ExitApp

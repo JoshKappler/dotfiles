@@ -11,6 +11,12 @@ mouse_mode true
 default_layout "cc-default"   // the control center's Home tab; `zellij attach -c claude-cc` creates the session with this
 show_startup_tips false
 copy_on_select true
+// Close the WHOLE session (and every CLI/agent pane in it) when the window is
+// closed, instead of leaving it running detached in the background. No lingering
+// claude-cc session to clean up; the next launch always starts fresh.
+on_force_close "quit"
+// Don't persist/resurrect dead sessions to disk either.
+session_serialization false
 
 // Green-on-black phosphor theme to match WezTerm's Homebrew scheme.
 themes {
