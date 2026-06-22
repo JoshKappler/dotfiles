@@ -1,5 +1,13 @@
 {{ if eq .chezmoi.os "windows" }}
 .config/helix
+.config/espanso
+Library
+.hammerspoon
+{{ else if eq .chezmoi.os "darwin" }}
+AppData
+.config/espanso
 {{ else }}
 AppData
+Library
+.hammerspoon
 {{ end }}

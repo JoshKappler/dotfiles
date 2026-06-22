@@ -1,0 +1,7 @@
+# espanso config — single shared source (chezmoi places it at the right per-OS path).
+# backend: clipboard => multi-line prompts paste cleanly & instantly into terminals
+# (WezTerm, Claude Code CLI) instead of being typed key-by-key.
+# auto_restart: true => espanso reloads automatically when this file or a match changes.
+
+backend: clipboard
+auto_restart: true

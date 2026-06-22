@@ -1,0 +1,107 @@
+# espanso prompt library — single shared source (chezmoi places it at the right per-OS path).
+# Reusable prompts for working in the Claude Code CLI. Type a trigger anywhere; the full
+# prompt is pasted via the clipboard (force_clipboard) so multi-line text lands intact.
+# The same prompts also exist as Claude Code slash-commands (~/.claude/commands).
+
+matches:
+  # :plan — scope the work before touching code.
+  - trigger: ":plan"
+    force_clipboard: true
+    replace: |
+      Before writing any code, plan this task:
+      1. Restate the goal in one sentence so we agree on scope.
+      2. List the files you expect to read or change.
+      3. Give a numbered, minimal step-by-step plan.
+      4. Call out risks, unknowns, or anything you'd need from me.
+      Then STOP and wait for my "OK" before making changes.
+
+  # :review — terse, high-signal code review.
+  - trigger: ":review"
+    force_clipboard: true
+    replace: |
+      Review the current changes. Be terse and specific.
+      - Flag correctness bugs, edge cases, and broken assumptions FIRST.
+      - Then note simplifications, dead code, and clearer naming.
+      - Reference each point as file:line. Skip praise and style nitpicks.
+      Only report what matters; if it's clean, say so in one line.
+
+  # :commit — conventional-commit message from the staged diff.
+  - trigger: ":commit"
+    force_clipboard: true
+    replace: |
+      Write a Conventional Commits message for the staged changes.
+      - Subject: type(scope): summary, imperative mood, <=72 chars.
+      - Types: feat|fix|refactor|perf|test|docs|chore|build|ci.
+      - Body (only if needed): what changed and WHY, wrapped at 72 cols.
+      Output only the commit message, nothing else.
+
+  # :debug — root-cause-first, no guessing.
+  - trigger: ":debug"
+    force_clipboard: true
+    replace: |
+      Debug this systematically — find the root cause, don't guess at fixes.
+      1. State the exact symptom and how to reproduce it.
+      2. Form 2-3 hypotheses; rank them by likelihood.
+      3. Tell me the smallest test/log that confirms or kills each one.
+      4. Once the cause is proven, propose the minimal fix.
+      Do not change code until the root cause is confirmed.
+
+  # :explain — explain unfamiliar code clearly.
+  - trigger: ":explain"
+    force_clipboard: true
+    replace: |
+      Explain this code clearly and concisely.
+      - One-sentence summary of what it does and why it exists.
+      - Walk the control/data flow; note any non-obvious behavior.
+      - Call out side effects, edge cases, and assumptions.
+      Use plain language; assume I know the language but not this codebase.
+
+  # :test — TDD, failing test first.
+  - trigger: ":test"
+    force_clipboard: true
+    replace: |
+      Write a failing test FIRST for this behavior, before any implementation.
+      - Cover the happy path plus the key edge cases.
+      - Match the project's existing test framework and conventions.
+      - Make the test name describe the behavior under test.
+      Run it, show me it fails for the right reason, then implement to green.
+
+  # :refactor — behavior-preserving cleanup.
+  - trigger: ":refactor"
+    force_clipboard: true
+    replace: |
+      Refactor this code WITHOUT changing its behavior.
+      - Improve names, structure, and readability; cut duplication.
+      - Keep changes small and reviewable; no new features or scope creep.
+      - Ensure existing tests still pass (add a missing one if needed).
+      Briefly explain each change and why it's safe.
+
+  # :tidy — quick local cleanup of the current file/diff.
+  - trigger: ":tidy"
+    force_clipboard: true
+    replace: |
+      Tidy up the current file/diff only — low-risk cleanups:
+      remove dead code and stray debug logs, fix obvious typos, tighten
+      naming, and apply the project's formatting/lint conventions.
+      Don't restructure logic or change behavior. List what you changed.
+
+  # :pr — pull-request title and body.
+  - trigger: ":pr"
+    force_clipboard: true
+    replace: |
+      Draft a pull request for the current branch's changes.
+      - Title: concise, imperative (matches our commit style).
+      - Body: ## Summary (what & why), ## Changes (bullets),
+        ## Testing (how it was verified), and any caveats/follow-ups.
+      Base it on the actual diff; keep it skimmable.
+
+  # :spec — turn a rough idea into a tight spec.
+  - trigger: ":spec"
+    force_clipboard: true
+    replace: |
+      Turn this idea into a short, concrete spec before we build:
+      - Problem & goal (1-2 sentences).
+      - Scope: what's in, what's explicitly out (non-goals).
+      - Approach: the proposed solution at a high level.
+      - Acceptance criteria: bullet list of "done" conditions.
+      - Open questions for me. Keep it under one page.
