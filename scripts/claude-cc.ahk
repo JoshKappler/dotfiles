@@ -31,7 +31,8 @@ OpenCenter() {
     mon := FindVerticalMonitor()
     MonitorGetWorkArea(mon, &l, &t, &r, &b)
     before := WinGetList("ahk_class " GridClass)
-    Run('wezterm start --class ' GridClass ' -- "' LaunchCmd '"')
+    ; wezterm execs PROG directly (CreateProcess), which can't run a .cmd — wrap in cmd /c.
+    Run('wezterm start --class ' GridClass ' -- cmd /c "' LaunchCmd '"')
     win := 0
     Loop 60 {                            ; wait up to ~6s for the new window
         Sleep 100
