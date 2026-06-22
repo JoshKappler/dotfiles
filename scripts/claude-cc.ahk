@@ -54,15 +54,19 @@ OpenCenter() {
         if win
             break
     }
-    if win {
-        WinRestore("ahk_id " win)
-        ; Non-maximized + movable: fit comfortably inside the vertical monitor's
-        ; work area with margins, so DPI scaling can't push it off the bottom-right.
-        ww := r - l
-        wh := b - t
-        w  := ww - 80
-        h  := Round(wh * 0.72)
-        WinMove(l + 40, t + 40, w, h, "ahk_id " win)
+    ; Position only if the window is still alive (it can close fast on a launch
+    ; error); guard so a vanished window never throws a script error.
+    if (win && WinExist("ahk_id " win)) {
+        try {
+            WinRestore("ahk_id " win)
+            ; Non-maximized + movable: fit comfortably inside the vertical monitor's
+            ; work area with margins, so DPI scaling can't push it off the bottom-right.
+            ww := r - l
+            wh := b - t
+            w  := ww - 80
+            h  := Round(wh * 0.72)
+            WinMove(l + 40, t + 40, w, h, "ahk_id " win)
+        }
     }
 }
 
