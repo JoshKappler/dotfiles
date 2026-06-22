@@ -44,7 +44,7 @@ keybinds {
         // Alt+a: add another Claude agent in this tab (new pane running `claude`).
         bind "Alt a" { Run "claude"; }
         // Alt+i: open the subagent inspector for this window as a floating overlay.
-        bind "Alt i" { Run "node" "{{ .chezmoi.homeDir | replace "\\" "/" }}/.local/share/claude-cc/inspector.mjs" { floating true; }; }
+        bind "Alt i" { Run "node" "{{ .chezmoi.homeDir | replace "\\" "/" }}/OneDrive/desktop/projects/claude-control-center/inspector.mjs" { floating true; }; }
         // Ctrl+Alt+w: DELIBERATE manual close of the focused agent. Closing is the
         // only way an agent dies — casual tab/pane navigation never can (see below).
         bind "Ctrl Alt w" { CloseFocus; }
