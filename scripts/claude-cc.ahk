@@ -11,6 +11,9 @@
 
 GridClass := "wezterm-claude-cc"
 LaunchCmd := EnvGet("USERPROFILE") "\.local\share\claude-cc\launch.cmd"
+; Resolve wezterm by full path so the launcher works regardless of the PATH it
+; inherited (a bare `wezterm` fails if started from a thin-PATH context).
+WezExe := FileExist(A_ProgramFiles "\WezTerm\wezterm.exe") ? A_ProgramFiles "\WezTerm\wezterm.exe" : "wezterm"
 
 FindVerticalMonitor() {
     Loop MonitorGetCount() {
@@ -32,7 +35,7 @@ OpenCenter() {
     MonitorGetWorkArea(mon, &l, &t, &r, &b)
     before := WinGetList("ahk_class " GridClass)
     ; wezterm execs PROG directly (CreateProcess), which can't run a .cmd — wrap in cmd /c.
-    Run('wezterm start --class ' GridClass ' -- cmd /c "' LaunchCmd '"')
+    Run('"' WezExe '" start --class ' GridClass ' -- cmd /c "' LaunchCmd '"')
     win := 0
     Loop 60 {                            ; wait up to ~6s for the new window
         Sleep 100
