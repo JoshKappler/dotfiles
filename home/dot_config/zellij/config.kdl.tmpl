@@ -1,8 +1,9 @@
 // ~/.config/zellij/config.kdl  (managed by chezmoi — templated; edit via `chezmoi edit`)
 theme "homebrew"
-// Frameless panes: agents are divided by a single thin line that runs edge to
-// edge, instead of a boxed ASCII frame around each one.
-pane_frames false
+// Pane frames ON: each agent gets a thin titled border ("Claude 1", "Claude 2",
+// ...) and the FOCUSED agent's border is highlighted, so you always see which
+// instance your keystrokes go to. Home and the hint/tab bars stay borderless.
+pane_frames true
 // Mouse ON: the pointer must work (click to focus a pane, click the Home tab to
 // jump back, drag a border to resize). Turning it off had stranded the cursor as
 // a text selector. The confusing "ALT-click group" hint is avoided by using the
@@ -59,6 +60,15 @@ keybinds {
         // the brackets you used to see now actually move between windows.
         bind "Alt [" { GoToPreviousTab; }
         bind "Alt ]" { GoToNextTab; }
+        // Alt+Arrows: move focus between the Claude agents INSIDE this tab. The
+        // highlighted border shows which one is active; stays within the tab.
+        bind "Alt Left"  { MoveFocus "Left"; }
+        bind "Alt Right" { MoveFocus "Right"; }
+        bind "Alt Up"    { MoveFocus "Up"; }
+        bind "Alt Down"  { MoveFocus "Down"; }
+        // Ctrl+Alt+q: deliberately close this WHOLE tab (all of its agents at
+        // once). Ctrl+Alt+w above closes only the single focused agent.
+        bind "Ctrl Alt q" { CloseTab; }
         // No-kill guard: disable global Quit so one keystroke can't nuke every agent.
         unbind "Ctrl q"
     }

@@ -10,7 +10,9 @@ layout {
         children
     }
     tab name="Home" focus=true {
-        pane command="node" {
+        // borderless: keep the dashboard frameless even though pane_frames is on
+        // (frames are for the agent tabs, to show which Claude is focused).
+        pane borderless=true command="node" {
             args "{{ .chezmoi.homeDir | replace "\\" "/" }}/OneDrive/desktop/projects/claude-control-center/home.mjs"
         }
     }
