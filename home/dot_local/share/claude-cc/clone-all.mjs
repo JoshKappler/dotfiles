@@ -68,6 +68,37 @@ function errMsg(e) {
   return msg.replace(/\s+/g, ' ').slice(0, 200);
 }
 
+// Map every clone already on disk, looking ONE level deep as well, so a repo you
+// tucked into a grouping folder (e.g. projects/other/algora) is updated in place
+// instead of being re-cloned as a top-level duplicate. Keyed by lowercased repo
+// name (macOS/Windows filesystems are case-insensitive). A top-level clone always
+// wins over a nested one of the same name.
+function buildLocationMap(root) {
+  const map = new Map(); // name(lowercased) -> absolute dir
+  let entries;
+  try { entries = fs.readdirSync(root, { withFileTypes: true }); }
+  catch { return map; }
+  for (const e of entries) {
+    if (!e.isDirectory()) continue;
+    const dir = path.join(root, e.name);
+    if (fs.existsSync(path.join(dir, '.git'))) {
+      map.set(e.name.toLowerCase(), dir);   // a repo sitting directly in root
+      continue;                             // never descend into a repo
+    }
+    let kids;                               // a plain grouping folder — peek inside
+    try { kids = fs.readdirSync(dir, { withFileTypes: true }); }
+    catch { continue; }
+    for (const k of kids) {
+      if (!k.isDirectory()) continue;
+      const key = k.name.toLowerCase();
+      if (!map.has(key) && fs.existsSync(path.join(dir, k.name, '.git'))) {
+        map.set(key, path.join(dir, k.name));
+      }
+    }
+  }
+  return map;
+}
+
 function defaultRoot() {
   const cand = path.join(os.homedir(), 'OneDrive', 'desktop', 'projects');
   try { if (fs.statSync(cand).isDirectory()) return cand; } catch { /* */ }
@@ -93,9 +124,11 @@ function ownerLogin() {
   }
 }
 
-function processRepo(owner, name, root, dry) {
+function processRepo(owner, name, root, dry, existing) {
   const rec = { name, action: 'skipped', branch: null, error: null };
-  const dir = path.join(root, name);
+  // Update an existing clone wherever it already lives (incl. one level deep);
+  // only a genuinely-missing repo is cloned fresh, at the top level of root.
+  const dir = existing.get(name.toLowerCase()) || path.join(root, name);
 
   // Missing -> clone.
   if (!fs.existsSync(dir)) {
@@ -195,10 +228,11 @@ function main() {
     return;
   }
 
+  const existing = buildLocationMap(root);
   const owner = ownerLogin();
   for (const name of names) {
     if (EXCLUDE.has(name.toLowerCase())) continue;
-    result.repos.push(processRepo(owner, name, root, dry));
+    result.repos.push(processRepo(owner, name, root, dry, existing));
   }
 
   process.stdout.write(JSON.stringify(result) + '\n');
