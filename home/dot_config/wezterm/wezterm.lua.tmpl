@@ -22,6 +22,9 @@ config.default_prog = { 'powershell.exe', '-NoLogo' }
 -- never collide. WezTerm manages only WINDOWS/TABS here; Zellij owns panes inside a window.
 config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
 config.keys = {
+  -- Plain Ctrl+V pastes from the clipboard (terminals normally reserve this combo;
+  -- bind it so paste works like every other app). Ctrl+Shift+V still works too.
+  { key = 'v', mods = 'CTRL', action = wezterm.action.PasteFrom 'Clipboard' },
   { key = 'n', mods = 'LEADER', action = wezterm.action.SpawnWindow },
   { key = 't', mods = 'LEADER', action = wezterm.action.SpawnTab 'CurrentPaneDomain' },
   { key = 'w', mods = 'LEADER', action = wezterm.action.CloseCurrentTab { confirm = false } },
