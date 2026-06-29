@@ -10,7 +10,7 @@ layout {
         // Black separator row: breaks the green chevron tab-bar away from the
         // content beneath it so the top of the window is not one solid green blob.
         pane size=1 borderless=true command="node" {
-            args "{{ .chezmoi.homeDir | replace "\\" "/" }}/OneDrive/desktop/projects/claude-control-center/separator.mjs"
+            args "{{ dig "ccRepo" (printf "%s/OneDrive/desktop/projects/claude-control-center" (.chezmoi.homeDir | replace "\\" "/")) . }}/separator.mjs"
         }
         children
     }
@@ -18,7 +18,7 @@ layout {
         // borderless: keep the dashboard frameless even though pane_frames is on
         // (frames are for the agent tabs, to show which Claude is focused).
         pane borderless=true command="node" {
-            args "{{ .chezmoi.homeDir | replace "\\" "/" }}/OneDrive/desktop/projects/claude-control-center/home.mjs"
+            args "{{ dig "ccRepo" (printf "%s/OneDrive/desktop/projects/claude-control-center" (.chezmoi.homeDir | replace "\\" "/")) . }}/home.mjs"
         }
     }
 }
