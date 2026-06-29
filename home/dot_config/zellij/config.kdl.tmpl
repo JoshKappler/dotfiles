@@ -71,6 +71,20 @@ keybinds {
         bind "Ctrl Alt q" { CloseTab; }
         // No-kill guard: disable global Quit so one keystroke can't nuke every agent.
         unbind "Ctrl q"
+        // Stop Zellij from eating ordinary terminal/Claude keys and popping up mode
+        // overlays. Ctrl+Backspace (delete word) emits Ctrl+H, which by DEFAULT
+        // opens Zellij's Move mode — that was the unexplained overlay. Unbind it and
+        // the other default mode-entry keys we don't use, so they pass straight
+        // through to Claude. Only `normal` and `locked` modes remain reachable; the
+        // intentional Alt+ workflow and Ctrl+g lock are untouched. Mouse scroll
+        // still covers scrollback, so dropping Ctrl+s scroll mode is fine.
+        unbind "Ctrl h"
+        unbind "Ctrl p"
+        unbind "Ctrl n"
+        unbind "Ctrl t"
+        unbind "Ctrl s"
+        unbind "Ctrl o"
+        unbind "Ctrl b"
     }
 
     // No-kill guard: strip the casual close-pane / close-tab keys from every mode

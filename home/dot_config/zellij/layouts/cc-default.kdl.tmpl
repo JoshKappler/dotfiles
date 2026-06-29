@@ -7,6 +7,11 @@ layout {
         // show the "ALT-click group" mouse hint that the compact/status bar does,
         // so the mouse can stay on without that clutter.
         pane size=1 borderless=true { plugin location="zellij:tab-bar"; }
+        // Black separator row: breaks the green chevron tab-bar away from the
+        // content beneath it so the top of the window is not one solid green blob.
+        pane size=1 borderless=true command="node" {
+            args "{{ .chezmoi.homeDir | replace "\\" "/" }}/OneDrive/desktop/projects/claude-control-center/separator.mjs"
+        }
         children
     }
     tab name="Home" focus=true {
