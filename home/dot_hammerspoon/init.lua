@@ -26,11 +26,14 @@ local function verticalScreen()
   return hs.screen.primaryScreen()
 end
 
--- Attach to the persistent "claude-cc" session if it exists, else create it with
--- the Home layout. Runs inside the new WezTerm window.
-local SESSION_CMD =
-  'zellij attach claude-cc 2>/dev/null || ' ..
-  'zellij -s claude-cc --layout "$HOME/.local/share/claude-cc/layouts/cc-default.kdl"'
+-- Attach to the persistent "claude-cc" session if it exists, else create it.
+-- Runs inside the new WezTerm window.
+-- NOTE (zellij 0.44.3): `zellij -s NAME --layout ...` is treated as an *attach*
+-- and exits "session not found" when the session doesn't exist yet, so the old
+-- `attach || -s --layout` form broke the very first launch. `attach -c` is the
+-- canonical attach-or-create; the session's layout comes from
+-- `default_layout "cc-default"` in the zellij config (see launch.cmd, same fix).
+local SESSION_CMD = 'zellij attach -c claude-cc'
 
 local function focusExisting()
   local app = hs.application.get("WezTerm") or hs.application.get("wezterm-gui")
@@ -72,6 +75,12 @@ local function openCenter()
     end,
     0.1)
 end
+
+-- The macOS bootstrap installs Hammerspoon but never made it start at login
+-- (Windows drops claude-cc.ahk into the Startup folder; there was no mac twin),
+-- so after any reboot Hammerspoon wasn't running and the global hotkey simply
+-- didn't exist. Ensure "Launch at login" every time this config loads.
+hs.autoLaunch(true)
 
 hs.hotkey.bind({ "ctrl", "alt" }, "c", openCenter)
 hs.alert.show("Claude Control Center loaded  (Ctrl+Alt+C)")
