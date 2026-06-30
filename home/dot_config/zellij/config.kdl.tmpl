@@ -49,7 +49,7 @@ keybinds {
     // --- Control Center actions (active in every mode except locked) ---
     shared_except "locked" {
         // Alt+a: add another Claude agent in this tab (new pane running `claude`).
-        bind "Alt a" { Run "claude"; }
+        bind "Alt a" { Run "claude" "--dangerously-skip-permissions"; }
         // Alt+i: open the subagent inspector for this window as a floating overlay.
         bind "Alt i" { Run "node" "{{ dig "ccRepo" (printf "%s/OneDrive/desktop/projects/claude-control-center" (.chezmoi.homeDir | replace "\\" "/")) . }}/inspector.mjs" { floating true; }; }
         // Ctrl+Alt+w: DELIBERATE manual close of the focused agent. Closing is the
