@@ -12,6 +12,13 @@ mouse_mode true
 default_layout "cc-default"   // the control center's Home tab; `zellij attach -c claude-cc` creates the session with this
 show_startup_tips false
 copy_on_select true
+{{- if eq .chezmoi.os "darwin" }}
+// macOS: copy selections straight to the system clipboard via pbcopy. Without this,
+// zellij falls back to OSC52, which does NOT reliably reach the Mac clipboard through
+// WezTerm — so copy_on_select looked dead (nothing landed on the clipboard). pbcopy
+// is local and deterministic. (Other OSes keep zellij's default OSC52 path.)
+copy_command "pbcopy"
+{{- end }}
 // Close the WHOLE session (and every CLI/agent pane in it) when the window is
 // closed, instead of leaving it running detached in the background. No lingering
 // claude-cc session to clean up; the next launch always starts fresh.

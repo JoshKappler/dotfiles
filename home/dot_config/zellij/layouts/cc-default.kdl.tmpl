@@ -1,19 +1,13 @@
 // cc-default — the control-center session layout (Tab 0 = Home, the Node TUI).
 // Lives in the zellij layout dir so `default_layout "cc-default"` resolves it by
 // name; the launcher creates the session via `zellij attach -c claude-cc`.
+//
+// NO tab-bar on Home: the built-in zellij tab-bar plugin hard-codes the session
+// name ("Zellij (claude-cc)") and the swap-layout name ("BASE") with no option to
+// hide them. Home doesn't need a tab strip anyway — you ARE home; the dashboard
+// names itself. Switch to agent windows with Alt+] / Alt+H. Agent tabs keep their
+// strip — see home.mjs genLayout().
 layout {
-    default_tab_template {
-        // Plain tab-bar = just the tab strip (which window you're on). It does NOT
-        // show the "ALT-click group" mouse hint that the compact/status bar does,
-        // so the mouse can stay on without that clutter.
-        pane size=1 borderless=true { plugin location="zellij:tab-bar"; }
-        // Black separator row: breaks the green chevron tab-bar away from the
-        // content beneath it so the top of the window is not one solid green blob.
-        pane size=1 borderless=true command="node" {
-            args "{{ dig "ccRepo" (printf "%s/OneDrive/desktop/projects/claude-control-center" (.chezmoi.homeDir | replace "\\" "/")) . }}/separator.mjs"
-        }
-        children
-    }
     tab name="Home" focus=true {
         // borderless: keep the dashboard frameless even though pane_frames is on
         // (frames are for the agent tabs, to show which Claude is focused).
